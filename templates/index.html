@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ewidencja Treningów</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: #38bdf8;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      gap: 2rem;
+    }
+
+    .flash {
+      padding: .8rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      text-align: center;
+    }
+    .flash.success { background: #166534; color: #bbf7d0; }
+    .flash.error   { background: #7f1d1d; color: #fecaca; }
+
+    .card {
+      background: #1e293b;
+      padding: 1.8rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      color: #f8fafc;
+      margin-bottom: 1.2rem;
+      border-left: 4px solid #38bdf8;
+      padding-left: .6rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+      align-items: flex-end;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      color: #94a3b8;
+      font-size: .85rem;
+      font-weight: 500;
+    }
+
+    input, select {
+      padding: .6rem .8rem;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 1rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #38bdf8;
+    }
+
+    button.btn-add {
+      background: #0284c7;
+      color: #fff;
+      padding: .6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    button.btn-add:hover { background: #0369a1; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: .5rem;
+    }
+
+    th {
+      text-align: left;
+      padding: .8rem;
+      color: #94a3b8;
+      font-size: .85rem;
+      font-weight: 600;
+      border-bottom: 1px solid #334155;
+    }
+
+    td {
+      padding: 1rem .8rem;
+      color: #cbd5e1;
+      border-bottom: 1px solid #334155;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .btn-del {
+      color: #f87171;
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .btn-del:hover { color: #ef4444; text-decoration: underline; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-box {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid #334155;
+    }
+
+    .stat-box .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: .2rem;
+    }
+
+    .stat-box .label {
+      font-size: .75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #64748b;
+      padding: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>💪 Ewidencja Treningów</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <h2>➕ Dodaj trening</h2>
+      <form action="/dodaj" method="POST">
+        <div class="form-grid">
+          <label>
+            Data
+            <input type="date" name="data" value="{{ today }}" min="2000-01-01">
+          </label>
+          <label>
+            Typ treningu
+            <select name="typ" required>
+              <option value="" disabled selected>Wybierz aktywność...</option>
+              <option value="Bieganie">Bieganie 🏃</option>
+              <option value="Siłownia">Siłownia 🏋️</option>
+              <option value="Rower">Rower 🚴</option>
+              <option value="Basen">Basen 🏊</option>
+              <option value="Spacer">Spacer 🚶</option>
+              <option value="Inny">Inny 🎯</option>
+            </select>
+          </label>
+          <label>
+            Czas (minuty)
+            <input type="number" name="czas" min="1" placeholder="np. 45" required>
+          </label>
+          <label>
+            Spalone kalorie (opcjonalnie)
+            <input type="number" name="kalorie" min="0" placeholder="Zostaw puste, by wyliczyć automatycznie">
+          </label>
+          <button class="btn-add" type="submit">Dodaj trening</button>
+        </div>
+      </form>
+    </div>
+
+    {% if statystyki %}
+    <div class="card">
+      <h2>📊 Statystyki Okresowe</h2>
+      <table style="text-align: center; margin-bottom: 1.5rem; font-size: 0.95rem;">
+        <thead>
+          <tr>
+            <th style="text-align: left;">Okres</th>
+            <th style="text-align: center;">Treningi</th>
+            <th style="text-align: center;">Czas (min)</th>
+            <th style="text-align: center;">Spalone (kcal)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align: left; color: #38bdf8; font-weight: 600;">W tym tygodniu</td>
+            <td>{{ statystyki.weekly.count }}</td>
+            <td>{{ statystyki.weekly.duration }}</td>
+            <td style="color: #f87171;">{{ statystyki.weekly.kcal }}</td>
+          </tr>
+          <tr>
+            <td style="text-align: left; color: #38bdf8; font-weight: 600;">W tym miesiącu</td>
+            <td>{{ statystyki.monthly.count }}</td>
+            <td>{{ statystyki.monthly.duration }}</td>
+            <td style="color: #f87171;">{{ statystyki.monthly.kcal }}</td>
+          </tr>
+          <tr>
+            <td style="text-align: left; color: #38bdf8; font-weight: 600;">W tym roku</td>
+            <td>{{ statystyki.yearly.count }}</td>
+            <td>{{ statystyki.yearly.duration }}</td>
+            <td style="color: #f87171;">{{ statystyki.yearly.kcal }}</td>
+          </tr>
+          <tr style="border-top: 2px solid #334155;">
+            <td style="text-align: left; color: #38bdf8; font-weight: 600; padding-top: 1.2rem;">Łącznie (Ogólne)</td>
+            <td style="padding-top: 1.2rem;">{{ statystyki.total.count }}</td>
+            <td style="padding-top: 1.2rem;">{{ statystyki.total.duration }} ({{ statystyki.hours }}h {{ statystyki.minutes }}m)</td>
+            <td style="color: #f87171; padding-top: 1.2rem;">{{ statystyki.total.kcal }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="stats-grid" style="margin-bottom: 2rem;">
+        <div class="stat-box">
+          <div class="value">{{ statystyki.avg_duration }}</div>
+          <div class="label">Śr. czas (min)</div>
+        </div>
+        <div class="stat-box">
+          <div class="value">{{ statystyki.avg_calories }}</div>
+          <div class="label">Śr. kalorie (kcal)</div>
+        </div>
+        <div class="stat-box">
+          <div class="value">{{ statystyki.favorite }}</div>
+          <div class="label">Ulubiony typ ({{ statystyki.favorite_count }}x)</div>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid #334155; padding-top: 1.5rem; margin-top: 1.5rem;">
+        <h3 style="font-size: 1.05rem; color: #f8fafc; margin-bottom: 1rem;">🔍 Filtruj własny zakres dat</h3>
+        <form action="/" method="GET">
+          <div class="form-grid">
+            <label>
+              Data od
+              <input type="date" name="data_od" value="{{ data_od }}" min="2000-01-01" required>
+            </label>
+            <label>
+              Data do
+              <input type="date" name="data_do" value="{{ data_do }}" min="2000-01-01" required>
+            </label>
+            <div style="display: flex; gap: 0.5rem; width: 100%;">
+              <button class="btn-add" type="submit" style="background: #0284c7;">Oblicz</button>
+              {% if data_od or data_do %}
+                <a href="/" style="background: #475569; color: white; text-decoration: none; padding: .6rem 1.2rem; border-radius: 8px; font-size: 1rem; font-weight: 600; text-align: center; display: inline-block;">Wyczyść</a>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+
+        {% if stats_zakresu %}
+          <div class="stats-grid" style="margin-top: 1.5rem; background: #0f172a; padding: 1.2rem; border-radius: 8px; border: 1px solid #334155; row-gap: 1.5rem;">
+            <div class="stat-box" style="border: none; background: transparent;"><div class="value">{{ stats_zakresu.count }}</div><div class="label">Treningi w okresie</div></div>
+            <div class="stat-box" style="border: none; background: transparent;"><div class="value">{{ stats_zakresu.duration }} min</div><div class="label">Czas łączny</div></div>
+            <div class="stat-box" style="border: none; background: transparent;"><div class="value">{{ stats_zakresu.avg_duration }} min</div><div class="label">Średni czas treningu</div></div>
+            <div class="stat-box" style="border: none; background: transparent; grid-column: span 3; text-align: left; padding: 0.5rem 1rem; border-top: 1px dashed #334155; margin-top: 0.5rem;">
+              <div class="label" style="margin-bottom: 0.5rem; font-size: 0.8rem;">Wykonane aktywności w tym przedziale:</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 1rem; color: #cbd5e1; font-size: 0.95rem;">
+                {% for typ, ile in stats_zakresu.type_breakdown.items() %}
+                  <span style="background: #1e293b; padding: 0.3rem 0.7rem; border-radius: 6px; border: 1px solid #475569;">
+                    <strong>{{ typ }}</strong>: {{ ile }}x
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% elif data_od and data_do %}
+          <p style="text-align: center; color: #64748b; margin-top: 1.5rem;">Brak treningów w wybranym przedziale czasowym. 🏖️</p>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <h2>📋 Historia treningów</h2>
+      {% if treningi %}
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Typ</th>
+            <th>Czas (min)</th>
+            <th>Kalorie</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in treningi %}
+          <tr>
+            <td>{{ t.date }}</td>
+            <td>{{ t.type }}</td>
+            <td>{{ w_duration if t.duration is defined else t.duration }}</td>
+            <td>{{ t.calories }} kcal</td>
+            <td>
+              <a class="btn-del" href="/usun/{{ loop.index0 }}"
+                 onclick="return confirm('Usunąć ten trening?')">Usuń</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p class="empty">Brak zapisanych treningów. Dodaj pierwszy! 💪</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</body>
+</html>
