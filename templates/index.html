@@ -332,7 +332,7 @@
           <tr>
             <td>{{ t.date }}</td>
             <td>{{ t.type }}</td>
-            <td>{{ w_duration if t.duration is defined else t.duration }}</td>
+            <td>{{ t.duration }}</td>
             <td>{{ t.calories }} kcal</td>
             <td>
               <a class="btn-del" href="/usun/{{ loop.index0 }}"
